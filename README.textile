@@ -1,0 +1,78 @@
+h1. Tabloid (concept)
+
+h2. Syntax
+
+<pre>
+class PostTable < Tabloid::Base
+  model Post                            # the ActiveRecord model, if cannot be 
+                                        # inferred from the class name. Can be 
+                                        # a class or name of class.
+  
+  # lets define columns for the record set
+  column :title                         # name of an attribute on model Post
+  column body                           # same as above, but done with ruby 
+                                        # magic which will be more useful 
+                                        # further on
+  column created_at, :as => :post_date  # add a column but name it something 
+                                        # different
+  
+  # now onto more complex column definitions
+  column author.name                    # WTF is that? With ruby magic we can 
+                                        # use the name of an association, in 
+                                        # this case :author, and include the 
+                                        # attribute :name. The column name 
+                                        # would default to :author_name.
+  column author.avatar.url,             # Yes, it evens work with nested 
+         :as => :author_picture         # associations ;)
+  
+  # how about we add bacon to this, by bacon I mean filters
+  filter :author_id, :with => :eq       # similar to adding a column, but we 
+                                        # define what operator we'd like to 
+                                        # use.
+  filter created_at,                    # same as before, but pass in multiple 
+         :with => [:gt, :gte]           # operators if one just wont do.
+  
+  # and now something you may be familiar with
+  where :published => true              # conditional clauses, but also group, 
+                                        # having and joins and they work just 
+                                        # as you'd expect them to.
+
+  # data is nothing if it cannot be sorted
+  sort created_at                       # good ol asc and desc sorting
+  sort title, :desc                     # we only want to sort by title 
+                                        # in descending order 
+end
+</pre>
+
+h2. Usage
+
+<pre>
+  PostTable.all                         # get all records, with all columns 
+                                        # and no filtering
+  PostTable.limit(10)                   # get up to 10 records
+  
+  PostTable.only(:title, :body)         # gets all records but only the :title 
+                                        # and :body columns contain any data
+  PostTable.except(:author_picture)     # we don't want :author_picture in the 
+                                        # recordset.
+  PostTable.filter(:created_at => {     # get some filter in on that data
+    :gt => 5.days.ago
+  })
+  PostTable.order :created_at, :asc     # we get to play choosies with how we 
+                                        # sort.
+  
+  # and of course you can chain these to make some fancy queries
+  PostTable.only(:title, :body).limit(10) \
+    .filter(:created_at => {:gt => 5.days.ago}) \
+    .where(:author_name => 'fred')
+  
+  # oh yeah, I just threw in a conditional statement
+</pre>
+
+h2. Feedback
+
+I'm just scratching the surface and there are more questions then answers but if you have any suggestions to anything or want to help out then:
+* fork
+* change
+* pull request
+* profit???
